@@ -1,0 +1,14 @@
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net10.0/PokemonGame
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net10.0/PokemonGame.deps.json
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net10.0/PokemonGame.runtimeconfig.json
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net10.0/PokemonGame.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net10.0/PokemonGame.pdb
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.GeneratedMSBuildEditorConfig.editorconfig
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.AssemblyInfoInputs.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.AssemblyInfo.cs
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.csproj.CoreCompileInputs.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/refint/PokemonGame.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.pdb
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/PokemonGame.genruntimeconfig.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net10.0/ref/PokemonGame.dll
