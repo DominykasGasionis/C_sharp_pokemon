@@ -2,16 +2,26 @@ using System.Text.Json;
 
 namespace PokemonGame;
 
+public class PokemonSaveEntry
+{
+    public string Name       { get; set; } = "";
+    public int    MaxHp      { get; set; }
+    public int    Hp         { get; set; }
+    public int    Attack     { get; set; }
+    public int    Defense    { get; set; }
+    public int    Level      { get; set; } = 5;
+    public int    Experience { get; set; } = 0;
+}
+
 public class SaveData
 {
-    public string PokemonName { get; set; } = "";
-    public int PokemonMaxHp { get; set; }
-    public int PokemonHp { get; set; }
-    public int PokemonAttack { get; set; }
-    public int PokemonDefense { get; set; }
-    public int PlayerX { get; set; }
-    public int PlayerY { get; set; }
-    public int EncounterChance { get; set; } = 25;
+    public List<PokemonSaveEntry> AllPokemon   { get; set; } = new();
+    public int[]                  PartyIndices { get; set; } = new[] { 0, -1, -1 };
+    public int PlayerX          { get; set; }
+    public int PlayerY          { get; set; }
+    public int EncounterChance  { get; set; } = 25;
+    public int Pokeballs        { get; set; } = 5;
+    public int Potions          { get; set; } = 3;
 }
 
 public static class SaveSystem
@@ -22,22 +32,31 @@ public static class SaveSystem
 
     public static bool SaveExists() => File.Exists(SavePath);
 
-    public static void Save(Pokemon pokemon, Player player, GameSettings settings)
+    public static void Save(PokemonRoster roster, Player player, GameSettings settings, Inventory inventory)
     {
         var data = new SaveData
         {
-            PokemonName    = pokemon.Name,
-            PokemonMaxHp   = pokemon.MaxHp,
-            PokemonHp      = pokemon.Hp,
-            PokemonAttack  = pokemon.Attack,
-            PokemonDefense = pokemon.Defense,
-            PlayerX        = player.X,
-            PlayerY        = player.Y,
+            AllPokemon = roster.All.Select(p => new PokemonSaveEntry
+            {
+                Name       = p.Name,
+                MaxHp      = p.MaxHp,
+                Hp         = p.Hp,
+                Attack     = p.Attack,
+                Defense    = p.Defense,
+                Level      = p.Level,
+                Experience = p.Experience,
+            }).ToList(),
+            PartyIndices    = roster.GetPartyIndices(),
+            PlayerX         = player.X,
+            PlayerY         = player.Y,
             EncounterChance = settings.EncounterChance,
+            Pokeballs       = inventory.Pokeballs,
+            Potions         = inventory.Potions,
         };
 
         Directory.CreateDirectory(Path.GetDirectoryName(SavePath)!);
-        File.WriteAllText(SavePath, JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(SavePath, JsonSerializer.Serialize(data,
+            new JsonSerializerOptions { WriteIndented = true }));
     }
 
     public static SaveData? Load()
@@ -51,6 +70,14 @@ public static class SaveSystem
         {
             return null;
         }
+    }
+
+    public static PokemonRoster RosterFromSave(SaveData save)
+    {
+        var all = save.AllPokemon
+            .Select(e => new Pokemon(e.Name, e.MaxHp, e.Attack, e.Defense, e.Hp, e.Level, e.Experience))
+            .ToList();
+        return new PokemonRoster(all, save.PartyIndices);
     }
 
     public static void Delete() => File.Delete(SavePath);

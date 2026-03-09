@@ -28,9 +28,10 @@ while (true)
             if (save is null) break;
 
             settings.EncounterChance = save.EncounterChance;
-            var pokemon = Pokemon.FromSave(save);
+            var roster    = SaveSystem.RosterFromSave(save);
+            var inventory = new Inventory { Pokeballs = save.Pokeballs, Potions = save.Potions };
             Console.Clear();
-            new Game(settings, pokemon, save.PlayerX, save.PlayerY).Run();
+            new Game(settings, roster, save.PlayerX, save.PlayerY, inventory).Run();
             break;
         }
 
@@ -44,7 +45,7 @@ while (true)
                 SaveSystem.Delete();
 
             Console.Clear();
-            new Game(settings, chosen).Run();
+            new Game(settings, new PokemonRoster(chosen)).Run();
             break;
         }
     }

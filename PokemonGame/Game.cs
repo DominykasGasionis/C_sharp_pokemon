@@ -2,26 +2,29 @@ namespace PokemonGame;
 
 public class Game
 {
-    private readonly Map _map;
-    private readonly Player _player;
-    private readonly Pokemon _playerPokemon;
-    private readonly Random _rng = new();
-    private readonly GameSettings _settings;
-    private readonly ScreenBuffer _buf = new();
+    private readonly Map           _map;
+    private readonly Player        _player;
+    private readonly PokemonRoster _roster;
+    private readonly Random        _rng = new();
+    private readonly GameSettings  _settings;
+    private readonly ScreenBuffer  _buf = new();
+    private readonly Inventory     _inventory;
     private string _statusMessage = "Vaikščiokite naudodami WASD arba rodyklių klavišus.";
 
-    public Game(GameSettings settings, Pokemon playerPokemon, int startX = 1, int startY = 1)
+    public Game(GameSettings settings, PokemonRoster roster, int startX = 1, int startY = 1, Inventory? inventory = null)
     {
-        _settings = settings;
-        _map = new Map();
-        _player = new Player(startX, startY);
-        _playerPokemon = playerPokemon;
+        _settings  = settings;
+        _map       = new Map();
+        _player    = new Player(startX, startY);
+        _roster    = roster;
+        _inventory = inventory ?? new Inventory();
     }
 
     public void Run()
     {
         Console.CursorVisible = false;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.Clear();
 
         while (true)
         {
@@ -30,9 +33,15 @@ public class Game
 
             if (key == ConsoleKey.Escape || key == ConsoleKey.Q)
             {
-                SaveSystem.Save(_playerPokemon, _player, _settings);
+                SaveSystem.Save(_roster, _player, _settings, _inventory);
                 _statusMessage = "Žaidimas išsaugotas.";
                 break;
+            }
+
+            if (key == ConsoleKey.I)
+            {
+                new PokemonMenu(_roster).Run();
+                continue;
             }
 
             HandleInput(key);
@@ -89,30 +98,44 @@ public class Game
 
     private void TriggerHeal()
     {
-        if (_playerPokemon.Hp == _playerPokemon.MaxHp)
+        bool allHealthy = _roster.Party
+            .Where(p => p != null)
+            .All(p => p!.Hp == p.MaxHp);
+
+        if (allHealthy)
         {
-            _statusMessage = "✚ Pokemon centras: jūsų Pokemon visiškai sveikas!";
+            _statusMessage = "✚ Pokemon centras: visi Pokemon visiškai sveiki!";
             return;
         }
 
-        _playerPokemon.HealFull();
-        _statusMessage = $"✚ Pokemon centras: {_playerPokemon.Name} atgavo visą sveikatą!";
+        _roster.HealParty();
+        _statusMessage = "✚ Pokemon centras: visi Pokemon atgavo visą sveikatą!";
     }
 
     private void TriggerBattle()
     {
-        var wild = Pokemon.RandomWild(_rng);
+        if (_roster.ActivePokemon == null)
+        {
+            _roster.HealParty();
+            _statusMessage = "Visi Pokemon krito. Atsigavote Pokemon centre.";
+            return;
+        }
+
+        var wild   = Pokemon.RandomWild(_rng);
         ClearScreen();
-        var battle = new Battle(_playerPokemon, wild, _rng);
+        var battle = new Battle(_roster, wild, _rng, _inventory);
         var result = battle.Run();
 
         _statusMessage = result switch
         {
-            BattleResult.PlayerWon  => $"Nugalėjote {wild.Name}!",
-            BattleResult.PlayerFled => "Pabėgote iš kovos.",
-            BattleResult.PlayerLost => $"{_playerPokemon.Name} krito. Atsigavote.",
-            _                       => "",
+            BattleResult.PlayerWon     => $"Nugalėjote {wild.Name}!",
+            BattleResult.PlayerFled    => "Pabėgote iš kovos.",
+            BattleResult.PlayerLost    => "Visi Pokemon krito. Atsigavote.",
+            BattleResult.PokemonCaught => $"Pagavote {wild.Name}! Patikrink inventorių [I].",
+            _                          => "",
         };
+
+        if (result == BattleResult.PlayerLost) _roster.HealParty();
     }
 
     private static void ClearScreen()
@@ -135,19 +158,22 @@ public class Game
         int rightPad = Math.Max(0, termW - leftPad - mapW);
         string pad   = new string(' ', leftPad);
 
+        int partyCount  = _roster.Party.Count(p => p != null);
+        int contentRows = _map.Height + 2 + partyCount + 7;
+        int termH0      = Math.Max(contentRows + 2, Console.WindowHeight);
+        int topMargin   = Math.Max(0, (termH0 - contentRows) / 2);
+        string blankRow = new string(' ', termW);
+        for (int i = 0; i < topMargin; i++) _buf.WriteLine(blankRow);
+
         _map.Render(_buf, _player.X, _player.Y, leftPad, rightPad);
 
-        // HUD plotis: platesnis nei žemėlapis, centruotas tarp jo kraštų
-        int hudLeftPad  = Math.Max(0, leftPad - 12);
-        int hudInner    = termW - 2 * hudLeftPad - 2;
-        int hudRightPad = Math.Max(0, termW - hudLeftPad - hudInner - 2);
-        string hpad     = new string(' ', hudLeftPad);
+        // HUD tokio paties pločio ir centravimo kaip žemėlapis
+        int hudLeftPad  = leftPad;
+        int hudInner    = _map.Width;
+        int hudRightPad = rightPad;
+        string hpad     = pad;
 
-        ConsoleColor hpColor = _playerPokemon.Hp > _playerPokemon.MaxHp / 2
-            ? ConsoleColor.Green
-            : _playerPokemon.Hp > _playerPokemon.MaxHp / 4
-                ? ConsoleColor.Yellow
-                : ConsoleColor.Red;
+        var active = _roster.ActivePokemon ?? _roster.Party.First(p => p != null);
 
         var tile = _map.GetTile(_player.X, _player.Y);
         string tileName = tile switch
@@ -161,68 +187,74 @@ public class Game
             _                   => "Kelias",
         };
 
-        // 1 eilutė: " ☻ " + name(12) + "  HP " + bar(?) + " " + hpFrac(9) + " "
-        //            4        12          5         ?        1    9             1  = 32 fixed
-        const int fixedHp = 32;
-        string hpFrac = $"{_playerPokemon.Hp}/{_playerPokemon.MaxHp}";
-        int    barW   = hudInner - fixedHp;
-        string hpBar  = _playerPokemon.HpBar(Math.Max(4, barW));
+        const int barW = 20;
 
-        // 2 eilutė fiksuota dalis: " ATK "(5) + atk(3) + "  DEF "(6) + def(3)
-        //   + "  │  "(5) + pos(7) + "  Vietovė: "(11) + " "(1) = 41 fixed
+        // Statistikos eilutė fiksuota dalis: " ATK "(5)+atk(3)+"  DEF "(6)+def(3)+"  │  "(5)+pos(7)+"  Vietovė: "(11)+" "(1) = 41
         const int fixedStats = 41;
         string tileField = tileName.PadRight(Math.Max(0, hudInner - fixedStats));
 
-        string hint   = "[WASD/↑↓←→] Judėti    [Q/Esc] Išsaugoti ir išeiti";
+        string hint   = "[WASD/↑↓←→] Judėti  [I] Pokemon  [Q/Esc] Išsaugoti ir išeiti";
         string status = _statusMessage.Length > hudInner - 2
             ? _statusMessage[..(hudInner - 5)] + "..."
             : _statusMessage;
-        string saveSymbol = SaveSystem.SaveExists() ? "✓" : "✗";
-        ConsoleColor saveColor = SaveSystem.SaveExists() ? ConsoleColor.Green : ConsoleColor.DarkGray;
 
         // ─── HUD ─────────────────────────────────────────────────
         Hline(_buf, hpad, hudInner, '╔', '═', '╗', hudRightPad);
 
-        // 1 eilutė: Pokemon + HP
-        HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
-            (ConsoleColor.Cyan,    $" ☻ {_playerPokemon.Name,-12}"),
-            (ConsoleColor.DarkGray,"  HP "),
-            (hpColor,              hpBar),
-            (ConsoleColor.DarkGray,$" {hpFrac,-9} "));
+        // Po eilutę kiekvienam užimtam partijos lizdui
+        int partyRows = 0;
+        for (int i = 0; i < 3; i++)
+        {
+            var p = _roster.Party[i];
+            if (p == null) continue;
 
-        // 2 eilutė: ATK / DEF / pozicija / vietovė
+            bool isActive = p == active;
+            string marker = isActive ? "☻" : "·";
+            ConsoleColor nameColor  = isActive ? ConsoleColor.Cyan : ConsoleColor.White;
+            ConsoleColor hpColor    = p.Hp > p.MaxHp / 2 ? ConsoleColor.Green
+                                    : p.Hp > p.MaxHp / 4 ? ConsoleColor.Yellow
+                                    : ConsoleColor.Red;
+            string hpFrac = $"{p.Hp}/{p.MaxHp}";
+            string hpBar  = p.HpBar(barW);
+
+            HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
+                (ConsoleColor.DarkGray, $" [{i + 1}]"),
+                (nameColor,             $"{marker} {p.Name,-10}"),
+                (ConsoleColor.DarkGray, $" Lv{p.Level,-2}"),
+                (ConsoleColor.DarkGray, "  HP "),
+                (hpColor,               hpBar),
+                (ConsoleColor.DarkGray, $" {hpFrac,-9} "));
+            partyRows++;
+        }
+
+        Hline(_buf, hpad, hudInner, '╠', '─', '╣', hudRightPad);
+
+        // statusas
         HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
-            (ConsoleColor.DarkGray, " ATK "),
-            (ConsoleColor.Yellow,   $"{_playerPokemon.Attack,-3}"),
-            (ConsoleColor.DarkGray, "  DEF "),
-            (ConsoleColor.Yellow,   $"{_playerPokemon.Defense,-3}"),
-            (ConsoleColor.DarkGray, "  │  "),
-            (ConsoleColor.White,    $"({_player.X,2},{_player.Y,2})"),
+            (ConsoleColor.White, $" {status.PadRight(hudInner - 2)}"));
+
+        // Pozicijos / vietovės eilutė
+        HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
+            (ConsoleColor.White,    $" ({_player.X,2},{_player.Y,2})"),
             (ConsoleColor.DarkGray, "  Vietovė: "),
             (ConsoleColor.Green,    tileField),
             (ConsoleColor.DarkCyan, " "));
 
-        // 3 eilutė: susitikimų šansas / išsaugojimas
-        HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
-            (ConsoleColor.DarkGray, " Šansas: "),
-            (ConsoleColor.Yellow,   $"{_settings.EncounterChance}%"),
-            (ConsoleColor.DarkGray, "  │  Išsaugota: "),
-            (saveColor,             saveSymbol),
-            (ConsoleColor.DarkCyan, " "));
-
         Hline(_buf, hpad, hudInner, '╠', '─', '╣', hudRightPad);
 
-        // 4 eilutė: statusas
-        HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
-            (ConsoleColor.White, $" {status.PadRight(hudInner - 2)}"));
-
-        Hline(_buf, hpad, hudInner, '╠', '─', '╣', hudRightPad);
-
-        // 5 eilutė: klavišai
+        // klavišai
         HRow(_buf, hpad, hudInner, hudRightPad, (ConsoleColor.DarkCyan, ""),
             (ConsoleColor.DarkGray, $" {hint.PadRight(hudInner - 2)}"));
 
         Hline(_buf, hpad, hudInner, '╚', '═', '╝', hudRightPad);
+
+        // Perrašyti likusias ekrano eilutes (senų kadrų likučiai)
+        // Map: Height+2. HUD: 1(top)+partyRows+1+1+1+1+1(bot) = partyRows+7
+        int renderedRows = topMargin + _map.Height + 2 + partyRows + 7;
+        int termH = Math.Max(renderedRows + 2, Console.WindowHeight);
+        string blankLine = new string(' ', termW);
+        for (int i = renderedRows; i < termH; i++)
+            _buf.WriteLine(blankLine);
 
         _buf.Flush();
     }

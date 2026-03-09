@@ -12,3 +12,4 @@
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.pdb
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.genruntimeconfig.cache
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/ref/PokemonGame.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.sourcelink.json
