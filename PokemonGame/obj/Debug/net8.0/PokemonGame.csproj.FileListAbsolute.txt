@@ -13,3 +13,7 @@
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.genruntimeconfig.cache
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/ref/PokemonGame.dll
 /home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.sourcelink.json
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net8.0/PokemonGame.Core.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/bin/Debug/net8.0/PokemonGame.Core.pdb
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonGame.csproj.AssemblyReference.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame/obj/Debug/net8.0/PokemonG.9FC571FC.Up2Date

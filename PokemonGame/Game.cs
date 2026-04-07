@@ -8,7 +8,7 @@ public class Game
     private readonly Random        _rng = new();
     private readonly GameSettings  _settings;
     private readonly ScreenBuffer  _buf = new();
-    private readonly Inventory     _inventory;
+    private Inventory              _inventory;
     private string _statusMessage = "Vaikščiokite naudodami WASD arba rodyklių klavišus.";
 
     public Game(GameSettings settings, PokemonRoster roster, int startX = 1, int startY = 1, Inventory? inventory = null)
@@ -83,10 +83,12 @@ public class Game
             {
                 _statusMessage = tile switch
                 {
-                    TileType.TallGrass => "Aukšta žolė... gali pasirodyti Pokemon!",
-                    TileType.Sand      => "Smėlio takas.",
-                    TileType.Flower    => "Čia auga gražios gėlės.",
-                    _                  => "",
+                    TileType.TallGrass when _settings.EncounterChance >= 50 => "Aukšta žolė! Pokemon pasirodo labai dažnai.",
+                    TileType.TallGrass when _settings.EncounterChance >= 25 => "Aukšta žolė... gali pasirodyti Pokemon!",
+                    TileType.TallGrass                                       => "Aukšta žolė. Pokemon reti.",
+                    TileType.Sand                                            => "Smėlio takas.",
+                    TileType.Flower                                          => "Čia auga gražios gėlės.",
+                    _                                                        => "",
                 };
             }
         }
@@ -109,7 +111,8 @@ public class Game
         }
 
         _roster.HealParty();
-        _statusMessage = "✚ Pokemon centras: visi Pokemon atgavo visą sveikatą!";
+        _inventory = _inventory + new Inventory { Pokeballs = 1, Potions = 1 };
+        _statusMessage = "✚ Pokemon centras: Pokemon pasveiko! Gauta +1 Pokeball, +1 Potion.";
     }
 
     private void TriggerBattle()

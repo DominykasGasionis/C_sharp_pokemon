@@ -19,31 +19,37 @@ public class Map
     public int Width  { get; }
     public int Height { get; }
 
-    private static readonly Dictionary<TileType, char> TileChars = new()
-    {
-        { TileType.Path,       '·' },
-        { TileType.TallGrass,  '"' },
-        { TileType.Water,      '~' },
-        { TileType.Tree,       '^' },
-        { TileType.Wall,       '█' },
-        { TileType.Building,   '▪' },
-        { TileType.Sand,       '·' },
-        { TileType.Flower,     '✿' },
-        { TileType.HealCenter, '✚' },
-    };
+    private static readonly Dictionary<TileType, char> TileChars;
+    private static readonly Dictionary<TileType, (ConsoleColor Fg, ConsoleColor Bg)> TileColors;
 
-    private static readonly Dictionary<TileType, (ConsoleColor Fg, ConsoleColor Bg)> TileColors = new()
+    static Map()
     {
-        { TileType.Path,       (ConsoleColor.DarkYellow, ConsoleColor.Black)   },
-        { TileType.TallGrass,  (ConsoleColor.Green,      ConsoleColor.Black)   },
-        { TileType.Water,      (ConsoleColor.Cyan,       ConsoleColor.DarkBlue)},
-        { TileType.Tree,       (ConsoleColor.DarkGreen,  ConsoleColor.Black)   },
-        { TileType.Wall,       (ConsoleColor.DarkGray,   ConsoleColor.Black)   },
-        { TileType.Building,   (ConsoleColor.Gray,       ConsoleColor.DarkGray)},
-        { TileType.Sand,       (ConsoleColor.Yellow,     ConsoleColor.Black)   },
-        { TileType.Flower,     (ConsoleColor.Magenta,    ConsoleColor.Black)   },
-        { TileType.HealCenter, (ConsoleColor.White,      ConsoleColor.DarkRed) },
-    };
+        TileChars = new Dictionary<TileType, char>
+        {
+            { TileType.Path,       '·' },
+            { TileType.TallGrass,  '"' },
+            { TileType.Water,      '~' },
+            { TileType.Tree,       '^' },
+            { TileType.Wall,       '█' },
+            { TileType.Building,   '▪' },
+            { TileType.Sand,       '·' },
+            { TileType.Flower,     '✿' },
+            { TileType.HealCenter, '✚' },
+        };
+
+        TileColors = new Dictionary<TileType, (ConsoleColor Fg, ConsoleColor Bg)>
+        {
+            { TileType.Path,       (ConsoleColor.DarkYellow, ConsoleColor.Black)   },
+            { TileType.TallGrass,  (ConsoleColor.Green,      ConsoleColor.Black)   },
+            { TileType.Water,      (ConsoleColor.Cyan,       ConsoleColor.DarkBlue)},
+            { TileType.Tree,       (ConsoleColor.DarkGreen,  ConsoleColor.Black)   },
+            { TileType.Wall,       (ConsoleColor.DarkGray,   ConsoleColor.Black)   },
+            { TileType.Building,   (ConsoleColor.Gray,       ConsoleColor.DarkGray)},
+            { TileType.Sand,       (ConsoleColor.Yellow,     ConsoleColor.Black)   },
+            { TileType.Flower,     (ConsoleColor.Magenta,    ConsoleColor.Black)   },
+            { TileType.HealCenter, (ConsoleColor.White,      ConsoleColor.DarkRed) },
+        };
+    }
 
     public bool IsPassable(int x, int y)
     {

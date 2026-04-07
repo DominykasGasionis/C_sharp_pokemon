@@ -1,6 +1,14 @@
 namespace PokemonGame;
 
-public class Pokemon
+[Flags]
+public enum StatusEffect
+{
+    None      = 0,
+    Poisoned  = 1 << 0, // 1
+    Paralyzed = 1 << 1, // 2
+}
+
+public class Pokemon : Entity, IComparable<Pokemon>, IFormattable, IHealable
 {
     public string Name { get; }
     public int MaxHp { get; private set; }
@@ -12,8 +20,14 @@ public class Pokemon
     public int XpReward { get; }
     public IReadOnlyList<Move> Moves { get; }
 
+    public StatusEffect Status { get; private set; } = StatusEffect.None;
+
     public bool IsAlive => Hp > 0;
     public int ExperienceToNextLevel => Level * 50;
+
+    public void ApplyStatus(StatusEffect effect)  => Status |= effect;
+    public void ClearStatus(StatusEffect effect)   => Status &= ~effect;
+    public bool HasStatus(StatusEffect effect)     => (Status & effect) != 0;
 
     public Pokemon(string name, int maxHp, int attack, int defense, int? currentHp = null, int level = 5, int experience = 0, int xpReward = 0)
     {
@@ -59,6 +73,24 @@ public class Pokemon
         ("Swalot",    100, 73, 83),
         ("Slugma",     70, 80, 50),
     };
+
+    public override string GetDisplayName() => $"{Name} Lv{Level}";
+
+    public int CompareTo(Pokemon? other) => other is null ? 1 : Level.CompareTo(other.Level);
+
+    public string ToString(string? format, IFormatProvider? _ = null) => format switch
+    {
+        "S" => $"{Name} Lv{Level}",
+        "L" => $"{Name} Lv{Level} HP:{Hp}/{MaxHp}{(Status != StatusEffect.None ? $" [{Status}]" : "")}",
+        _   => Name,
+    };
+
+    public void Deconstruct(out string name, out int hp, out int maxHp)
+    {
+        name  = Name;
+        hp    = Hp;
+        maxHp = MaxHp;
+    }
 
     public void HealFull() => Hp = MaxHp;
 
@@ -120,6 +152,10 @@ public class Pokemon
     public static Pokemon RandomWild(Random rng)
     {
         var (name, hp, atk, def, xpReward) = WildPool[rng.Next(WildPool.Length)];
-        return new Pokemon(name, hp, atk, def, xpReward: xpReward);
+        int level     = rng.Next(2, 9); // 2–8
+        int scaledHp  = Math.Max(10, hp  + (level - 5) * 3);
+        int scaledAtk = Math.Max(5,  atk + (level - 5) * 2);
+        int scaledDef = Math.Max(5,  def + (level - 5) * 2);
+        return new Pokemon(name, scaledHp, scaledAtk, scaledDef, xpReward: xpReward, level: level);
     }
 }

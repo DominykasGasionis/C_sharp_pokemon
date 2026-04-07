@@ -123,8 +123,12 @@ public class PokemonMenu
 
     // ── Helpers ───────────────────────────────────────────────────────
 
-    private List<Pokemon> BoxPokemon() =>
-        _roster.All.Where(p => !_roster.Party.Contains(p)).ToList();
+    private List<Pokemon> BoxPokemon()
+    {
+        var box = _roster.All.Where(p => !_roster.Party.Contains(p)).ToList();
+        box.Sort(); // naudoja Pokemon.CompareTo – rūšiuoja pagal lygį
+        return box;
+    }
 
     // ── Rendering ────────────────────────────────────────────────────
 
@@ -163,8 +167,10 @@ public class PokemonMenu
             if (poke == null)
                 return $"  {slotTag} {cursor} (tuščia)";
 
-            string name = poke.Name.PadRight(13);
-            return $"  {slotTag} {cursor} {name} Lv{poke.Level,-2}  HP: {poke.Hp,3}/{poke.MaxHp,-3}  XP: {poke.Experience}/{poke.ExperienceToNextLevel}";
+            var (pokeName, hp, maxHp) = poke; // Deconstruct
+            string name   = pokeName.PadRight(13);
+            int    xpLeft = poke.ExperienceToNextLevel - poke.Experience;
+            return $"  {slotTag} {cursor} {name} Lv{poke.Level,-2}  HP: {hp,3}/{maxHp,-3}  XP: {poke.Experience}/{poke.ExperienceToNextLevel} (liko {xpLeft})";
         }
 
         // Header

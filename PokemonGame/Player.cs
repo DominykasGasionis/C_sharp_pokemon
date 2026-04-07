@@ -1,6 +1,6 @@
 namespace PokemonGame;
 
-public class Player
+public class Player : Entity
 {
     public int X { get; private set; }
     public int Y { get; private set; }
@@ -10,6 +10,8 @@ public class Player
         X = startX;
         Y = startY;
     }
+
+    public override string GetDisplayName() => "@";
 
     public bool TryMove(int dx, int dy, Map map)
     {

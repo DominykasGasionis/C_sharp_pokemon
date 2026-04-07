@@ -39,7 +39,7 @@ public class PokemonRoster
 
     public void HealParty()
     {
-        foreach (var p in Party) p?.HealFull();
+        foreach (IHealable? p in Party) p?.HealFull();
     }
 
     public int[] GetPartyIndices() =>

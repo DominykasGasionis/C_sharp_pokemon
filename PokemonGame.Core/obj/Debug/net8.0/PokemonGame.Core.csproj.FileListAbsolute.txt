@@ -1,0 +1,12 @@
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/bin/Debug/net8.0/PokemonGame.Core.deps.json
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/bin/Debug/net8.0/PokemonGame.Core.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/bin/Debug/net8.0/PokemonGame.Core.pdb
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.GeneratedMSBuildEditorConfig.editorconfig
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.AssemblyInfoInputs.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.AssemblyInfo.cs
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.csproj.CoreCompileInputs.cache
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.sourcelink.json
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/refint/PokemonGame.Core.dll
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/PokemonGame.Core.pdb
+/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/obj/Debug/net8.0/ref/PokemonGame.Core.dll

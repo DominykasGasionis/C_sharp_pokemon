@@ -7,14 +7,30 @@
   "targets": {
     ".NETCoreApp,Version=v8.0": {
       "PokemonGame/1.0.0": {
+        "dependencies": {
+          "PokemonGame.Core": "1.0.0"
+        },
         "runtime": {
           "PokemonGame.dll": {}
+        }
+      },
+      "PokemonGame.Core/1.0.0": {
+        "runtime": {
+          "PokemonGame.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
   },
   "libraries": {
     "PokemonGame/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PokemonGame.Core/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
