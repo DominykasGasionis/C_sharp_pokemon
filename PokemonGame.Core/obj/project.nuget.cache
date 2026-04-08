@@ -1,11 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "n5nqeN78AUo=",
+  "dgSpecHash": "3NMTzY6Jg2k=",
   "success": true,
   "projectFilePath": "/home/dominykas/Documents/C_sharp_pokemon/PokemonGame.Core/PokemonGame.Core.csproj",
-  "expectedPackageFiles": [
-    "/home/dominykas/.nuget/packages/microsoft.netcore.app.ref/8.0.25/microsoft.netcore.app.ref.8.0.25.nupkg.sha512",
-    "/home/dominykas/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.25/microsoft.aspnetcore.app.ref.8.0.25.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }
