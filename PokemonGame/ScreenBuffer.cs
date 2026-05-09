@@ -6,6 +6,7 @@ using System.Text;
 /// Kaupia visą kadrą StringBuilder'yje su ANSI spalvų kodais
 /// ir išveda vienu Console.Write – be mirksėjimo.
 /// </summary>
+// Uždaryta (sealed) klasė – negali būti paveldima
 public sealed class ScreenBuffer
 {
     private readonly StringBuilder _sb = new(32768);

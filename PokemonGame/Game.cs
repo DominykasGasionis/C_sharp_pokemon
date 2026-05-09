@@ -81,6 +81,8 @@ public class Game
             }
             else
             {
+                // Šablonų atitikimas (pattern matching): switch išraiška
+                // 'when' raktažodis – papildoma sąlyga šablone
                 _statusMessage = tile switch
                 {
                     TileType.TallGrass when _settings.EncounterChance >= 50 => "Aukšta žolė! Pokemon pasirodo labai dažnai.",
@@ -100,6 +102,7 @@ public class Game
 
     private void TriggerHeal()
     {
+        // LINQ: Where filtruoja null vietas, All tikrina ar visi Pokemon sveiki
         bool allHealthy = _roster.Party
             .Where(p => p != null)
             .All(p => p!.Hp == p.MaxHp);
@@ -124,10 +127,20 @@ public class Game
             return;
         }
 
-        var wild   = Pokemon.RandomWild(_rng);
+        var wild = Pokemon.RandomWild(_rng);
         ClearScreen();
-        var battle = new Battle(_roster, wild, _rng, _inventory);
-        var result = battle.Run();
+        BattleResult result;
+        try
+        {
+            var battle = new Battle(_roster, wild, _rng, _inventory);
+            result = battle.Run();
+        }
+        catch (NoPokemonAvailableException ex)
+        {
+            _roster.HealParty();
+            _statusMessage = ex.Message + " Atsigavote Pokemon centre.";
+            return;
+        }
 
         _statusMessage = result switch
         {

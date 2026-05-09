@@ -1,0 +1,27 @@
+Teisingai atlikote implementaciją IEnumerable<T> (1 t.)
+
+Teisingai atlikote implementaciją IEnumerator<T> (1 t.)
+
+Sukūrėte iteratorių (0.5 t.)
+
+Praplėtėte C# tipus (0.5 t.)
+
+Sukūrėte ir panaudojote savo išimties tipus (1 t.)
+
+Yra blokai 'try' 'catch' vietose, kur gali įvykti klaida (1 t.)
+
+Sukūrėte savo bendrąjį (generic) tipą (1 t.)
+
+Pritaikėte savo bendrąjį (generic) tipą naudojant raktažodį 'where' (1 t.)
+
+Sukūrėte savo bendrąjį (generic) plėtimo metodą (1 t.)
+
+Sukūrėte praplėtimo dekonstruktorių (1 t.)
+
+Teisingai atlikote implementaciją ICloneable (1 t.)
+
+Naudojate įvykius savo projekte (1 t.)
+
+Naudojate LINQ (1 t.)
+
+Naudojate savo projekte duomenų bazę ir Entity Framework. (3 t.)

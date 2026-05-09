@@ -27,11 +27,10 @@ while (true)
             var save = SaveSystem.Load();
             if (save is null) break;
 
-            settings.EncounterChance = save.EncounterChance;
-            var roster    = SaveSystem.RosterFromSave(save);
-            var inventory = new Inventory { Pokeballs = save.Pokeballs, Potions = save.Potions };
+            var (roster, player, savedSettings, inventory) = save.Value;
+            settings.EncounterChance = savedSettings.EncounterChance;
             Console.Clear();
-            new Game(settings, roster, save.PlayerX, save.PlayerY, inventory).Run();
+            new Game(settings, roster, player.X, player.Y, inventory).Run();
             break;
         }
 
@@ -39,7 +38,7 @@ while (true)
         {
             var selector = new PokemonSelector(rng);
             var chosen = selector.Run();
-            if (chosen is null) break; // grįžo atgal į meniu
+            if (chosen is null) break;
 
             if (SaveSystem.SaveExists())
                 SaveSystem.Delete();

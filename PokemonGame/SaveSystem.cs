@@ -1,42 +1,46 @@
-using System.Text.Json;
-
 namespace PokemonGame;
 
-public class PokemonSaveEntry
-{
-    public string Name       { get; set; } = "";
-    public int    MaxHp      { get; set; }
-    public int    Hp         { get; set; }
-    public int    Attack     { get; set; }
-    public int    Defense    { get; set; }
-    public int    Level      { get; set; } = 5;
-    public int    Experience { get; set; } = 0;
-}
-
-public class SaveData
-{
-    public List<PokemonSaveEntry> AllPokemon   { get; set; } = new();
-    public int[]                  PartyIndices { get; set; } = new[] { 0, -1, -1 };
-    public int PlayerX          { get; set; }
-    public int PlayerY          { get; set; }
-    public int EncounterChance  { get; set; } = 25;
-    public int Pokeballs        { get; set; } = 5;
-    public int Potions          { get; set; } = 3;
-}
-
+// Išsaugojimo sistema naudojanti Entity Framework Core su SQLite duomenų baze
 public static class SaveSystem
 {
-    private static readonly string SavePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        ".pokemongame", "save.json");
+    // Sukuria duomenų bazės lenteles jei jų dar nėra
+    private static void EnsureDb()
+    {
+        using var db = new GameDbContext();
+        db.Database.EnsureCreated();
+    }
 
-    public static bool SaveExists() => File.Exists(SavePath);
+    // Tikrina ar yra išsaugotų duomenų duomenų bazėje
+    public static bool SaveExists()
+    {
+        try
+        {
+            EnsureDb();
+            using var db = new GameDbContext();
+            return db.GameStates.Any();
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
+    // Išsaugo visą žaidimo būseną į SQLite duomenų bazę
     public static void Save(PokemonRoster roster, Player player, GameSettings settings, Inventory inventory)
     {
-        var data = new SaveData
+        EnsureDb();
+        using var db = new GameDbContext();
+
+        // Išvalome senus duomenis prieš rašant naujus
+        db.Pokemon.RemoveRange(db.Pokemon);
+        db.GameStates.RemoveRange(db.GameStates);
+        db.SaveChanges();
+
+        // Įrašome kiekvieną Pokemon su rūšiavimo indeksu tvarkai išlaikyti
+        for (int i = 0; i < roster.All.Count; i++)
         {
-            AllPokemon = roster.All.Select(p => new PokemonSaveEntry
+            var p = roster.All[i];
+            db.Pokemon.Add(new SavedPokemonEntity
             {
                 Name       = p.Name,
                 MaxHp      = p.MaxHp,
@@ -45,26 +49,57 @@ public static class SaveSystem
                 Defense    = p.Defense,
                 Level      = p.Level,
                 Experience = p.Experience,
-            }).ToList(),
-            PartyIndices    = roster.GetPartyIndices(),
+                XpReward   = p.XpReward,
+                SortOrder  = i,
+            });
+        }
+
+        // Įrašome žaidimo būseną (pozicija, nustatymai, inventorius)
+        int[] indices = roster.GetPartyIndices();
+        db.GameStates.Add(new SavedGameState
+        {
             PlayerX         = player.X,
             PlayerY         = player.Y,
             EncounterChance = settings.EncounterChance,
             Pokeballs       = inventory.Pokeballs,
             Potions         = inventory.Potions,
-        };
+            PartyIndices    = string.Join(",", indices),
+        });
 
-        Directory.CreateDirectory(Path.GetDirectoryName(SavePath)!);
-        File.WriteAllText(SavePath, JsonSerializer.Serialize(data,
-            new JsonSerializerOptions { WriteIndented = true }));
+        db.SaveChanges();
     }
 
-    public static SaveData? Load()
+    // Nuskaito žaidimo būseną iš SQLite; grąžina null jei nėra išsaugojimo
+    public static (PokemonRoster roster, Player player, GameSettings settings, Inventory inventory)? Load()
     {
-        if (!SaveExists()) return null;
         try
         {
-            return JsonSerializer.Deserialize<SaveData>(File.ReadAllText(SavePath));
+            EnsureDb();
+            using var db = new GameDbContext();
+
+            var state = db.GameStates.FirstOrDefault();
+            if (state == null) return null;
+
+            // Nuskaitome Pokemon LINQ užklausa, išrikiuotus pagal įrašymo tvarką
+            var all = db.Pokemon
+                .OrderBy(p => p.SortOrder)
+                .Select(e => new Pokemon(e.Name, e.MaxHp, e.Attack, e.Defense, e.Hp, e.Level, e.Experience, e.XpReward))
+                .ToList();
+
+            if (all.Count == 0) return null;
+
+            // Party indeksai saugomi kaip "0,-1,-1" eilutė, konvertuojame atgal
+            int[] indices = state.PartyIndices
+                .Split(',')
+                .Select(int.Parse)
+                .ToArray();
+
+            var roster    = new PokemonRoster(all, indices);
+            var player    = new Player(state.PlayerX, state.PlayerY);
+            var settings  = new GameSettings { EncounterChance = state.EncounterChance };
+            var inventory = new Inventory { Pokeballs = state.Pokeballs, Potions = state.Potions };
+
+            return (roster, player, settings, inventory);
         }
         catch
         {
@@ -72,13 +107,17 @@ public static class SaveSystem
         }
     }
 
-    public static PokemonRoster RosterFromSave(SaveData save)
+    // Ištrina visus išsaugotus duomenis iš duomenų bazės
+    public static void Delete()
     {
-        var all = save.AllPokemon
-            .Select(e => new Pokemon(e.Name, e.MaxHp, e.Attack, e.Defense, e.Hp, e.Level, e.Experience))
-            .ToList();
-        return new PokemonRoster(all, save.PartyIndices);
+        try
+        {
+            EnsureDb();
+            using var db = new GameDbContext();
+            db.Pokemon.RemoveRange(db.Pokemon);
+            db.GameStates.RemoveRange(db.GameStates);
+            db.SaveChanges();
+        }
+        catch { }
     }
-
-    public static void Delete() => File.Delete(SavePath);
 }

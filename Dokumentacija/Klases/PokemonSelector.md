@@ -5,11 +5,34 @@
 
 ## Paskirtis
 
-Pradinio Pokemon pasirinkimo ekranas. Atsitiktinai parodo 3 Pokemon iš galimų starterių ir leidžia žaidėjui pasirinkti vieną.
+Pradinio Pokemon pasirinkimo ekranas. Rodomas kuriant naują žaidimą. Atsitiktinai parodo 3 skirtingus Pokemon iš galimų starterių ir leidžia žaidėjui pasirinkti vieną.
 
 ## Veikimas
 
-Konstruktoriuje iš `Pokemon.StarterPool` atsitiktinai išrenkami 3 unikalūs Pokemon (be pasikartojimų). Kiekvienas rodomas kaip kortelė su statistikomis.
+### Konstruktorius
+
+```csharp
+public PokemonSelector(Random rng)
+{
+    var pool = Pokemon.StarterPool.ToList();  // 8 galimi starteriai
+    _choices = new (string, int, int, int)[3];
+    for (int i = 0; i < 3; i++)
+    {
+        int idx = rng.Next(pool.Count);
+        _choices[i] = pool[idx];
+        pool.RemoveAt(idx);  // pašalina kad nesikartotų
+    }
+}
+```
+
+Išrenkami **3 unikalūs** starteriai be pasikartojimų (kiekvienas pasirinktas Pokemon pašalinamas iš pool'o).
+
+### `Run()` grąžina
+
+- **`Pokemon`** – pasirinktas starteris (naujas objektas su pradžios statistikomis)
+- **`null`** – žaidėjas paspaudė `Esc`/`Backspace` ir grįžo į pagrindinį meniu
+
+## Kortelių vizualizacija
 
 ```
   ╔══════════════╗   ┌──────────────┐   ┌──────────────┐
@@ -21,11 +44,29 @@ Konstruktoriuje iš `Pokemon.StarterPool` atsitiktinai išrenkami 3 unikalūs Po
           ▲
 ```
 
-Aktyviai pažymėta kortelė rodoma su dvigubo rėmelio simboliais `╔╗╚╝` ir `▲` žymekliu apačioje.
+- **Aktyvus** pasirinkimas – dvigubi rėmelio simboliai `╔╗╚╝`, geltona spalva, `▲` žymeklis apačioje
+- **Neaktyvūs** – viengubi `┌┐└┘`, tamsiai pilka spalva
 
 ## Navigacija
 
-- `A`/`←` – į kairę
-- `D`/`→` – į dešinę
-- `Enter`/`Tarpas` – patvirtinti
-- `Esc`/`Backspace` – grįžti į pagrindinį meniu (grąžina `null`)
+| Klavišas | Veiksmas |
+|---|---|
+| `A` / `←` | Pasirinkti kairįjį Pokemon |
+| `D` / `→` | Pasirinkti dešinįjį Pokemon |
+| `Enter` / `Tarpas` | Patvirtinti pasirinkimą |
+| `Esc` / `Backspace` | Grįžti į pagrindinį meniu (grąžina `null`) |
+
+## Galimi starteriai (`Pokemon.StarterPool`)
+
+| Pokemon | HP | ATK | DEF |
+|---|---|---|---|
+| Bulbasaur | 45 | 49 | 49 |
+| Charmander | 39 | 52 | 43 |
+| Squirtle | 44 | 48 | 65 |
+| Pikachu | 35 | 55 | 40 |
+| Eevee | 55 | 45 | 45 |
+| Gulpin | 40 | 45 | 35 |
+| Swalot | 100 | 73 | 83 |
+| Slugma | 70 | 80 | 50 |
+
+Pasirinktas Pokemon sukuriamas **5-ame lygyje** (numatyta konstruktoriaus reikšmė).

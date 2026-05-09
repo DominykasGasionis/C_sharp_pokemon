@@ -6,17 +6,30 @@
 
 ## Paskirtis
 
-Bendra bazinė klasė visoms žaidimo esybėms, kurios turi turėti rodomą pavadinimą. Apibrėžia bendrą kontraktą per abstraktų metodą.
+Bazinė abstrakti klasė visoms žaidimo esybėms. Apibrėžia bendrą kontraktą – kiekviena esybė turi mokėti grąžinti savo rodomą vardą.
+
+## Kodas
+
+```csharp
+public abstract class Entity
+{
+    public abstract string GetDisplayName();
+}
+```
 
 ## Metodai
 
 | Metodas | Grąžina | Aprašas |
 |---|---|---|
-| `GetDisplayName()` | `string` | Abstraktus – privalo būti implementuotas paveldėtojų |
+| `GetDisplayName()` | `string` | Abstraktus – kiekviena poklasė privalo įgyvendinti ir grąžinti rodomą pavadinimą |
 
 ## Paveldėtojai
 
-| Klasė | Implementacija |
-|---|---|
-| `Pokemon` | `"{Name} Lv{Level}"` – pvz. `"Pikachu Lv7"` |
-| `Player` | `"@"` – žaidėjo simbolis žemėlapyje |
+| Klasė | `GetDisplayName()` grąžina | Pavyzdys |
+|---|---|---|
+| `Pokemon` | `"{Name} Lv{Level}"` | `"Pikachu Lv7"` |
+| `Player` | `"@"` | Žaidėjo simbolis žemėlapyje |
+
+## Architektūrinė pastaba
+
+Naudoja **abstraktų metodą** (Template Method principas) – priverčia visas poklases aprašyti, kaip jos turi būti rodomos. Tai užtikrina, kad bet koks `Entity` objektas visada turės vardą, kurį galima parodyti ekrane.

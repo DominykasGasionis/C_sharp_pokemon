@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PokemonGame")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d8377593de6e009f3561c097c7b184969fcc5bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3de9a8ae56a7ae5b5f52c97a2fdc4cb3c39256fc")]
 [assembly: System.Reflection.AssemblyProductAttribute("PokemonGame")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PokemonGame")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

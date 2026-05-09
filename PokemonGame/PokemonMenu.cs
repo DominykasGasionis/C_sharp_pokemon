@@ -125,6 +125,7 @@ public class PokemonMenu
 
     private List<Pokemon> BoxPokemon()
     {
+        // LINQ Where: filtruoja tik tuos Pokemon kurie nėra party nariai (dėžutės Pokemon)
         var box = _roster.All.Where(p => !_roster.Party.Contains(p)).ToList();
         box.Sort(); // naudoja Pokemon.CompareTo – rūšiuoja pagal lygį
         return box;

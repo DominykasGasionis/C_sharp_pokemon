@@ -8,7 +8,7 @@ public class Battle
     private readonly Pokemon       _wild;
     private readonly Random        _rng;
     private readonly Inventory     _inventory;
-    private readonly List<string>  _log = new();
+    private readonly GameLog<string> _log = new(50);
     private readonly ScreenBuffer  _buf = new();
     private Pokemon _active;
     private bool    _selectingAttack  = false;
@@ -28,7 +28,14 @@ public class Battle
         _wild      = wild;
         _rng       = rng;
         _inventory = inventory;
-        _active    = roster.ActivePokemon!;
+        // Jei nėra gyvų Pokemon – metame savą išimtį vietoje NullReferenceException
+        _active = roster.ActivePokemon ?? throw new NoPokemonAvailableException();
+
+        // Lambda funkcija (delegatas) prenumeruoja OnLevelUp įvykį kiekvienam roster Pokemon –
+        // lygio kėlimo žinutė automatiškai patenka į mūšio žurnalą
+        foreach (var p in _roster)
+            p.OnLevelUp += (pokemon, level) =>
+                _log.Add($"★ {pokemon.Name} pasiekė {level} lygį!");
     }
 
     public BattleResult Run()
@@ -43,6 +50,22 @@ public class Battle
                 if (move == null) { _selectingAttack = false; continue; }
 
                 _selectingAttack = false;
+                // try/catch – gaudome savo išimtis ir rodome žinutę žaidėjui
+                try
+                {
+                    if (_active.IsFainted()) throw new PokemonFaintedException(_active.Name);
+                    if (move.Power <= 0)    throw new InvalidMoveException(move.Name);
+                }
+                catch (PokemonFaintedException ex)
+                {
+                    AddLog(ex.Message);
+                    continue;
+                }
+                catch (InvalidMoveException ex)
+                {
+                    AddLog(ex.Message);
+                    continue;
+                }
                 int rawDmg    = move.Power / 5 + _active.Attack + _rng.Next(-5, 6);
                 int actualDmg = _wild.TakeDamage(rawDmg);
                 AddLog($"{_active.Name} naudojo {move.Name}! {_wild.Name} gavo {actualDmg} žalos.");
@@ -181,7 +204,12 @@ public class Battle
         }
     }
 
-    private void AddLog(string msg) => _log.Add(msg);
+    // 'params' raktažodis – leidžia perduoti bet kiek žinučių vienu kvietimu
+    private void AddLog(params string[] messages)
+    {
+        foreach (var msg in messages)
+            _log.Add(msg);
+    }
 
     private void WaitKey()
     {
@@ -240,12 +268,12 @@ public class Battle
         }
         else
         {
-            // Range [^n..] – paskutinės iki 3 žurnalo žinučių
-            string[] recent = _log.ToArray()[^Math.Min(_log.Count, 3)..];
+            string[] recent = _log.GetLast(3).ToArray();
             line1 = recent.Length > 2 ? $"  {recent[0]}"               : "";
             line2 = recent.Length > 1 ? $"  {recent[recent.Length - 2]}" : "";
-            line3 = recent.Length > 0 ? $"  {recent[^1]}"              : "";
+            line3 = recent.Length > 0 ? $"  {recent[^1]}"              : ""; // [^1] – Range indeksas nuo galo
         }
+        // [..(n)] – Range tipo pjūvis: eilutė sutrumpinama iki nurodyto ilgio
         string Clip(string s) => s.Length > LeftW - 1 ? s[..(LeftW - 4)] + "..." : s;
         string msgRow1 = Clip(line1).PadRight(LeftW);
         string msgRow2 = Clip(line2).PadRight(LeftW);

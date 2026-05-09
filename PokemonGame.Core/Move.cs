@@ -1,5 +1,6 @@
 namespace PokemonGame;
 
+// IEquatable<T> implementacija – leidžia lyginti Move objektus pagal reikšmę
 public class Move : IEquatable<Move>
 {
     public string Name  { get; }
@@ -11,8 +12,9 @@ public class Move : IEquatable<Move>
         Power = power;
     }
 
+    // IEquatable<T>.Equals – lyginami abu laukai (vardas ir galia)
     public bool Equals(Move? other) =>
-        other is not null && Name == other.Name && Power == other.Power;
+        other is not null && Name == other.Name && Power == other.Power; // 'is' operatorius
 
     public override bool Equals(object? obj) => Equals(obj as Move);
 

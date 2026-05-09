@@ -19,9 +19,11 @@ public class Map
     public int Width  { get; }
     public int Height { get; }
 
+    // Dictionary<K,V> – duomenų struktūros iš System.Collections.Generic
     private static readonly Dictionary<TileType, char> TileChars;
     private static readonly Dictionary<TileType, (ConsoleColor Fg, ConsoleColor Bg)> TileColors;
 
+    // Statinis konstruktorius – vykdomas vieną kartą prieš pirmą klasės naudojimą
     static Map()
     {
         TileChars = new Dictionary<TileType, char>
