@@ -189,7 +189,7 @@ public class Game
         int hudRightPad = rightPad;
         string hpad     = pad;
 
-        var active = _roster.ActivePokemon ?? _roster.Party.First(p => p != null);
+        var active = _roster.ActivePokemon ?? _roster.Party.FirstOrDefault(p => p != null);
 
         var tile = _map.GetTile(_player.X, _player.Y);
         string tileName = tile switch

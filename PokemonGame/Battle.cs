@@ -129,7 +129,11 @@ public class Battle
                         int catchChance = (int)((1.0 - hpFrac) * 70) + 10;
                         if (_rng.Next(100) < catchChance)
                         {
-                            _roster.Catch(_wild);
+                            // Klonuojame wild Pokemon prieš pridedant į roster –
+                            // taip išvengiama mūšio metu gautų statusų (nuodai, paralyžius)
+                            var caught = (Pokemon)_wild.Clone();
+                            caught.ClearStatus(StatusEffect.Poisoned | StatusEffect.Paralyzed);
+                            _roster.Catch(caught);
                             AddLog($"{_wild.Name} pagautas!");
                             WaitKey();
                             return BattleResult.PokemonCaught;

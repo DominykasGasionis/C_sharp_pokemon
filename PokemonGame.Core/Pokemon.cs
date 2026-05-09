@@ -136,6 +136,7 @@ public class Pokemon : Entity, IComparable<Pokemon>, IFormattable, IHealable, IC
     // Numatytasis argumentas barWidth = 20
     public string HpBar(int barWidth = 20)
     {
+        if (MaxHp <= 0) return "[" + new string('░', barWidth) + "]";
         int filled = (int)Math.Round((double)Hp / MaxHp * barWidth);
         return "[" + new string('█', filled) + new string('░', barWidth - filled) + "]";
     }
